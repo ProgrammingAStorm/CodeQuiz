@@ -1,0 +1,38 @@
+body {
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+}
+header a {
+    margin: auto 0;
+}
+
+main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.question-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 25%;
+    margin: 0 auto;
+}
+.question-wrapper h1 {
+    text-align: center;
+}
+
+.answer-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+.answer-wrapper button {
+    width: 33%;
+    margin: 7px;
+}
