@@ -21,6 +21,7 @@ var questions = [
     }
 ]
 var currentQuestion
+var score = 0
 
 var startButtonHandler = function() {
     startingEls.remove();
@@ -60,16 +61,59 @@ var createQuestion = function() {
 var answerHandler = function(event) {
     var target = event.target
 
-    if (target.matches(".btn")) {
-        if (questionCounter > questions.length) {
-            main.removeChild(currentQuestion)
-            currentQuestion = createQuestion()
-            main.appendChild(currentQuestion)
+    if (target.matches(".btn")) {        
+        if (parseInt(target.getAttribute("data-ques-id")) === questions[questionCounter - 1].correct) {
+            currentQuestion.querySelector("p").textContent = "right"
+            score++
         }
         else {
-            main.removeChild(currentQuestion)
+            currentQuestion.querySelector("p").textContent = "wrong"
+            score--
         }
+
+        setTimeout(function() {
+            if (questionCounter + 1 > questions.length) {
+                main.removeChild(currentQuestion)
+                console.log(createFinalTally())
+                main.appendChild(createFinalTally())
+            }
+            else {
+                main.removeChild(currentQuestion)
+                currentQuestion = createQuestion()
+                main.appendChild(currentQuestion)
+            }
+        }, 2500)
     }
+}
+var createFinalTally = function() {
+    var finalTally = document.createElement("div")
+    finalTally.className = "final-tally"
+
+    var finalTitle = document.createElement("h1")
+    finalTitle.textContent = "All Done!"
+    finalTally.appendChild(finalTitle)
+
+    var finalScore = document.createElement("p")
+    finalScore.textContent = "Your final score is: " + score
+    finalTally.appendChild(finalScore)
+
+    var inputPrompt = document.createElement("p")
+    inputPrompt.textContent = "Enter your name to submit your score and try again."
+    finalTally.appendChild(inputPrompt)
+
+    var inputWrapper = document.createElement("div")
+    inputWrapper.className = "inputWrapper"
+    
+    var nameInput = document.createElement("input")
+    inputWrapper.appendChild(nameInput)
+
+    var goBack = document.createElement("button")
+    goBack.textContent = "Go Back"
+    inputWrapper.appendChild(goBack)
+
+    finalTally.appendChild(inputWrapper)
+
+    return finalTally
 }
 
 startBut.addEventListener("click", startButtonHandler)
