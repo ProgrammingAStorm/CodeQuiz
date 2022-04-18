@@ -1,7 +1,7 @@
 var main = document.querySelector("main")
 var startingEls = document.querySelector("section[id='start']")
 var startBut = document.querySelector("button[id='start-but']")
-var questionCounter = 0
+var currentQuestion
 var questions = [
     {
         question: "Lorem Ipsum",
@@ -20,8 +20,9 @@ var questions = [
         correct: 4
     }
 ]
-var currentQuestion
 var score = 0
+var waiting = false
+var questionCounter = 0
 
 var startButtonHandler = function() {
     startingEls.remove();
@@ -45,7 +46,7 @@ var createQuestion = function() {
         var answer = document.createElement("button")
         answer.textContent = questions[questionCounter][`${x + 1}`]
         answer.setAttribute("data-ques-id", x + 1)
-        answer.className = "btn"
+        answer.className = "btn answer"
         answerWrapper.appendChild(answer)
     }
     questionWrapper.appendChild(answerWrapper)
@@ -59,9 +60,13 @@ var createQuestion = function() {
     return questionWrapper;
 }
 var answerHandler = function(event) {
+    if (waiting) return
+
     var target = event.target
 
-    if (target.matches(".btn")) {        
+    if (target.matches(".answer")) {    
+        waiting = true;
+        
         if (parseInt(target.getAttribute("data-ques-id")) === questions[questionCounter - 1].correct) {
             currentQuestion.querySelector("p").textContent = "right"
             score++
@@ -74,15 +79,31 @@ var answerHandler = function(event) {
         setTimeout(function() {
             if (questionCounter + 1 > questions.length) {
                 main.removeChild(currentQuestion)
-                console.log(createFinalTally())
-                main.appendChild(createFinalTally())
+                currentQuestion = createFinalTally()
+                main.appendChild(currentQuestion)
+                waiting = false
+                questionCounter = 0
+                score = 0
+                return
             }
             else {
                 main.removeChild(currentQuestion)
                 currentQuestion = createQuestion()
                 main.appendChild(currentQuestion)
+                waiting = false
+                return
             }
-        }, 2500)
+        }, 1000)
+    }
+    else if (target.matches(".go-back")) {
+        var nameInput = document.querySelector("input[id='name-input']")
+
+        console.log(nameInput.value)
+
+        main.removeChild(currentQuestion)
+        main.appendChild(startingEls)
+        waiting = false
+        return
     }
 }
 var createFinalTally = function() {
@@ -105,10 +126,14 @@ var createFinalTally = function() {
     inputWrapper.className = "inputWrapper"
     
     var nameInput = document.createElement("input")
+    nameInput.id = "name-input"
+    nameInput.placeholder = "Enter name here:"
+    nameInput.type = "text"
     inputWrapper.appendChild(nameInput)
 
     var goBack = document.createElement("button")
     goBack.textContent = "Go Back"
+    goBack.className = "btn go-back"
     inputWrapper.appendChild(goBack)
 
     finalTally.appendChild(inputWrapper)
