@@ -1,6 +1,5 @@
 var main = document.querySelector("main")
 var startingEls = document.querySelector("section[id='start']")
-var startBut = document.querySelector("button[id='start-but']")
 var currentQuestion
 var questions = [
     {
@@ -20,23 +19,79 @@ var questions = [
         correct: 4
     }
 ]
-var score = 0
-var waiting = false
-var questionCounter = 0
+var quiz = {
+    score: 0,
+    waiting: false,
+    questionCounter: 0,
+    scores: []
+}
 
-var startButtonHandler = function() {
+function buttonHandler(event) {
+
+    if (quiz.waiting) return
+
+    var target = event.target
+
+    if (target.matches("#start-but")) {
+        startButtonHandler()
+    }
+    else if (target.matches(".answer")) {    
+        answerHandler(target)
+    }
+    else if (target.matches(".go-back")) {
+        goBackHandler()
+    }
+
+    function answerHandler() {
+        quiz.waiting = true;
+            
+        if (parseInt(target.getAttribute("data-ques-id")) === questions[quiz.questionCounter - 1].correct) {
+            currentQuestion.querySelector("p").textContent = "right"
+            quiz.score++
+        }
+        else {
+            currentQuestion.querySelector("p").textContent = "wrong"
+            quiz.score--
+        }
+    
+        setTimeout(function() {
+            if (quiz.questionCounter + 1 > questions.length) {
+                main.removeChild(currentQuestion)
+
+                currentQuestion = createFinalTally()
+                main.appendChild(currentQuestion)
+
+                quiz.waiting = false
+                quiz.questionCounter = 0
+                return
+            }
+            else {
+                main.removeChild(currentQuestion)
+
+                currentQuestion = createQuestion()
+                main.appendChild(currentQuestion)
+
+                quiz.waiting = false
+                return
+            }
+        }, 1000)
+    }
+}
+function startButtonHandler() {
     startingEls.remove();
 
     currentQuestion = createQuestion()
     main.appendChild(currentQuestion)
+
+    quiz.waiting = false
 }
-var createQuestion = function() {
+function createQuestion() {
     var questionWrapper = document.createElement("div")
     questionWrapper.className = "question-wrapper"
 
     var question = document.createElement("h1")
-    question.textContent = questions[questionCounter].question
-    question.setAttribute("data-correct", questions[questionCounter].correct)
+    question.textContent = questions[quiz.questionCounter].question
+    question.setAttribute("data-correct", questions[quiz.questionCounter].correct)
     questionWrapper.appendChild(question)
 
     var answerWrapper = document.createElement("div")
@@ -44,7 +99,7 @@ var createQuestion = function() {
 
     for (var x = 0; x < 4; x++) {
         var answer = document.createElement("button")
-        answer.textContent = questions[questionCounter][`${x + 1}`]
+        answer.textContent = questions[quiz.questionCounter][`${x + 1}`]
         answer.setAttribute("data-ques-id", x + 1)
         answer.className = "btn answer"
         answerWrapper.appendChild(answer)
@@ -55,58 +110,11 @@ var createQuestion = function() {
     feedback.textContent = "feedback"
     questionWrapper.appendChild(feedback)
 
-    questionCounter++
+    quiz.questionCounter++
 
     return questionWrapper;
 }
-var answerHandler = function(event) {
-    if (waiting) return
-
-    var target = event.target
-
-    if (target.matches(".answer")) {    
-        waiting = true;
-        
-        if (parseInt(target.getAttribute("data-ques-id")) === questions[questionCounter - 1].correct) {
-            currentQuestion.querySelector("p").textContent = "right"
-            score++
-        }
-        else {
-            currentQuestion.querySelector("p").textContent = "wrong"
-            score--
-        }
-
-        setTimeout(function() {
-            if (questionCounter + 1 > questions.length) {
-                main.removeChild(currentQuestion)
-                currentQuestion = createFinalTally()
-                main.appendChild(currentQuestion)
-                waiting = false
-                questionCounter = 0
-                score = 0
-                return
-            }
-            else {
-                main.removeChild(currentQuestion)
-                currentQuestion = createQuestion()
-                main.appendChild(currentQuestion)
-                waiting = false
-                return
-            }
-        }, 1000)
-    }
-    else if (target.matches(".go-back")) {
-        var nameInput = document.querySelector("input[id='name-input']")
-
-        console.log(nameInput.value)
-
-        main.removeChild(currentQuestion)
-        main.appendChild(startingEls)
-        waiting = false
-        return
-    }
-}
-var createFinalTally = function() {
+function createFinalTally() {
     var finalTally = document.createElement("div")
     finalTally.className = "final-tally"
 
@@ -115,11 +123,11 @@ var createFinalTally = function() {
     finalTally.appendChild(finalTitle)
 
     var finalScore = document.createElement("p")
-    finalScore.textContent = "Your final score is: " + score
+    finalScore.textContent = "Your final quiz.score is: " + quiz.score
     finalTally.appendChild(finalScore)
 
     var inputPrompt = document.createElement("p")
-    inputPrompt.textContent = "Enter your name to submit your score and try again."
+    inputPrompt.textContent = "Enter your name to submit your quiz.score and try again."
     finalTally.appendChild(inputPrompt)
 
     var inputWrapper = document.createElement("div")
@@ -140,6 +148,19 @@ var createFinalTally = function() {
 
     return finalTally
 }
+function goBackHandler() {
+    var name = document.querySelector("input[id='name-input']").value
 
-startBut.addEventListener("click", startButtonHandler)
-main.addEventListener("click", answerHandler)
+    if(!name) name = "Anonymous"
+
+    saveScore(name)
+
+    main.removeChild(currentQuestion)
+    main.appendChild(startingEls)
+
+    quiz.waiting = false
+    quiz.score = 0
+    return
+}
+
+main.addEventListener("click", buttonHandler)
