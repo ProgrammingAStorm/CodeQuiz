@@ -5,12 +5,36 @@ var startingEls = document.querySelector("section[id='start']")
 var currentQuestion
 var questions = [
     {
-        question: "Lorem Ipsum",
-        1: "yes",
-        2: "no",
-        3: "maybe so",
-        4: "all of the above",
+        question: "Which one of these is NOT a Javascript keyword?",
+        1: "var",
+        2: "const",
+        3: "let",
+        4: "val",
         correct: 4
+    },
+    {
+        question: "Is Javascript good?",
+        1: "Yes",
+        2: "No",
+        3: "Maybe so",
+        4: "All of the above",
+        correct: 3
+    },
+    {
+        question: "Is it true that I couldn't think of any questions?",
+        1: "Likely",
+        2: "Of course Not",
+        3: "I don't care",
+        4: "Huh?",
+        correct: 4
+    },
+    {
+        question: "Which one of these is correct?",
+        1: "This answer is correct",
+        2: "The one above me is lying",
+        3: "The one above me is lying",
+        4: "I'm lying",
+        correct: 1
     },
     {
         question: "Lorem Ipsum",
@@ -81,10 +105,15 @@ function buttonHandler(event) {
         quiz.waiting = true;
             
         if (parseInt(target.getAttribute("data-ques-id")) === questions[quiz.questionCounter - 1].correct) {
-            currentQuestion.querySelector("p").textContent = "right"
+            var feedback = currentQuestion.querySelector(".feedback")
+            feedback.style.visibility = "visible"
+            feedback.textContent = "Right!"
         }
         else {
-            currentQuestion.querySelector("p").textContent = "wrong"
+            var feedback = currentQuestion.querySelector(".feedback")
+            feedback.style.visibility = "visible"
+            feedback.textContent = "Wrong!"
+
             quiz.waiting = false
             quiz.time = quiz.time - 5
 
@@ -137,7 +166,7 @@ function buttonHandler(event) {
     }
     function createQuestion() {
         var questionWrapper = document.createElement("div")
-        questionWrapper.className = "question-wrapper"
+        questionWrapper.className = "content"
     
         var question = document.createElement("h1")
         question.textContent = questions[quiz.questionCounter].question
@@ -158,6 +187,8 @@ function buttonHandler(event) {
     
         var feedback = document.createElement("p")
         feedback.textContent = "feedback"
+        feedback.className = "feedback"
+        feedback.style.visibility = "hidden"
         questionWrapper.appendChild(feedback)
     
         quiz.questionCounter++
@@ -166,7 +197,7 @@ function buttonHandler(event) {
     }
     function createFinalTally() {
         var finalTally = document.createElement("div")
-        finalTally.className = "final-tally"
+        finalTally.className = "content"
     
         var finalTitle = document.createElement("h1")
         finalTitle.textContent = "All Done!"
@@ -181,7 +212,7 @@ function buttonHandler(event) {
         finalTally.appendChild(inputPrompt)
     
         var inputWrapper = document.createElement("div")
-        inputWrapper.className = "inputWrapper"
+        inputWrapper.className = "input-wrapper"
         
         var nameInput = document.createElement("input")
         nameInput.id = "name-input"
@@ -216,8 +247,9 @@ function viewScoresHandler(event) {
     loadScores()
 
     currentQuestion = document.createElement("div")
-    if (!quiz.scores) {
+    currentQuestion.className = "content"
 
+    if (!quiz.scores) {
         var label = document.createElement("p")
         label.textContent = "There are no scores."
         currentQuestion.appendChild(label)
@@ -225,6 +257,7 @@ function viewScoresHandler(event) {
     else {
         quiz.scores.forEach(element => {
             var container = document.createElement("div")
+            container.className = "score-container"
             
             var name = document.createElement("p")
             name.textContent = "Name: " + element.savName
@@ -247,18 +280,27 @@ function viewScoresHandler(event) {
 function saveScore(name) {
     loadScores()
 
-    quiz.scores.push({
-        savName: name,
-        savScore: quiz.time
-    })
+    if (!quiz.scores) {
+        quiz.scores = []
+        quiz.scores.push({
+            savName: name,
+            savScore: quiz.time
+        })
+    }
+    else {
+        quiz.scores.push({
+            savName: name,
+            savScore: quiz.time
+        })
+    }
 
     localStorage.setItem("scores", JSON.stringify(quiz.scores))
 }
 function loadScores() {
     quiz.scores = localStorage.getItem("scores")
     if(!quiz.scores) {
-        quiz.scores = []
-        return false
+        quiz.scores = null
+        return
     }
 
     quiz.scores = JSON.parse(quiz.scores)
